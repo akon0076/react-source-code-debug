@@ -244,6 +244,7 @@ export function createContainer(
   hydrate: boolean,
   hydrationCallbacks: null | SuspenseHydrationCallbacks,
 ): OpaqueRoot {
+  console.log('执行 createContainer', {containerInfo, tag, hydrate, hydrationCallbacks})
   return createFiberRoot(containerInfo, tag, hydrate, hydrationCallbacks);
 }
 
@@ -253,6 +254,12 @@ export function updateContainer(
   parentComponent: ?React$Component<any, any>,
   callback: ?Function,
 ): Lane {
+  console.log('执行 updateContainer (mount?)', {
+    element,
+    container,
+    parentComponent,
+    callback,
+  })
   if (__DEV__) {
     onScheduleRoot(container, element);
   }

@@ -7,6 +7,7 @@
  * @flow
  */
 
+import { logWhite, logPink } from './console.tool';
 import type {Thenable, Wakeable} from 'shared/ReactTypes';
 import type {Fiber, FiberRoot} from './ReactInternalTypes';
 import type {Lanes, Lane} from './ReactFiberLane';
@@ -327,6 +328,7 @@ let hasUncaughtError = false;
 let firstUncaughtError = null;
 let legacyErrorBoundariesThatAlreadyFailed: Set<mixed> | null = null;
 
+// 判断是否要开启调度
 let rootDoesHavePassiveEffects: boolean = false;
 let rootWithPendingPassiveEffects: FiberRoot | null = null;
 let pendingPassiveEffectsRenderPriority: ReactPriorityLevel = NoSchedulerPriority;
@@ -550,6 +552,21 @@ export function scheduleUpdateOnFiber(
   lane: Lane,
   eventTime: number,
 ) {
+  let fiberName = '某个Fiber';
+  if (fiber && fiber.stateNode) {
+    fiberName = 'hostRootFiber';
+  } else if (fiber && fiber.key) {
+    fiberName = `Fiber ${fiber.key}`;
+  }
+  logPink({
+    name: `执行 scheduleUpdateOnFiber 开始调度更新${fiberName}`,
+    args: [{
+      fiber,
+      lane,
+      eventTime,
+    }]
+  });
+  
   checkForNestedUpdates();
   warnAboutRenderPhaseUpdatesInDEV(fiber);
 
@@ -669,6 +686,7 @@ function markUpdateLaneFromFiberToRoot(
   sourceFiber: Fiber,
   lane: Lane,
 ): FiberRoot | null {
+  console.log("执行 markUpdateLaneFromFiberToRoot 从当前节点找到根节点", {root, lane});
   // Update the source fiber's lanes
   // 更新现有fiber上的lanes
   sourceFiber.lanes = mergeLanes(sourceFiber.lanes, lane);
@@ -718,6 +736,7 @@ function markUpdateLaneFromFiberToRoot(
 // root has work on. This function is called on every update, and right before
 // exiting a task.
 function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
+  console.log("执行 ensureRootIsScheduled 开始从根节点更新", {root, currentTime});
   const existingCallbackNode = root.callbackNode;
 
   // Check if any lanes are being starved by other work. If so, mark them as
@@ -806,6 +825,8 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
 // This is the entry point for every concurrent task, i.e. anything that
 // goes through Scheduler.
 function performConcurrentWorkOnRoot(root) {
+  logWhite({name: "执行 performConcurrentWorkOnRoot 开始异步调度render", args: [root]});
+
   // Since we know we're in a React event, we can clear the current
   // event time. The next update will compute a new event time.
   currentEventTime = NoTimestamp;
@@ -1031,6 +1052,7 @@ function markRootSuspended(root, suspendedLanes) {
 // This is the entry point for synchronous tasks that don't go
 // through Scheduler
 function performSyncWorkOnRoot(root) {
+  logWhite({name: "开始同步调度render performSyncWorkOnRoot", args: [root]});
   invariant(
     (executionContext & (RenderContext | CommitContext)) === NoContext,
     'Should not already be working.',
@@ -1624,6 +1646,8 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
 // The work loop is an extremely hot path. Tell Closure not to inline it.
 /** @noinline */
 function workLoopSync() {
+  console.log('执行 workLoopSync');
+  
   // Already timed out, so perform work without checking if we need to yield.
   while (workInProgress !== null) {
     performUnitOfWork(workInProgress);
@@ -1631,6 +1655,8 @@ function workLoopSync() {
 }
 
 function renderRootConcurrent(root: FiberRoot, lanes: Lanes) {
+  console.log('执行 renderRootConcurrent');
+  
   const prevExecutionContext = executionContext;
   executionContext |= RenderContext;
 
@@ -1710,6 +1736,8 @@ function renderRootConcurrent(root: FiberRoot, lanes: Lanes) {
 
 /** @noinline */
 function workLoopConcurrent() {
+  console.log('执行 workLoopConcurrent');
+  
   // Perform work until Scheduler asks us to yield
   while (workInProgress !== null && !shouldYield()) {
     performUnitOfWork(workInProgress);
@@ -1717,6 +1745,8 @@ function workLoopConcurrent() {
 }
 
 function performUnitOfWork(unitOfWork: Fiber): void {
+  console.log('执行 performUnitOfWork');
+  
   // The current, flushed, state of this fiber is the alternate. Ideally
   // nothing should rely on this, but relying on it here means that we don't
   // need an additional field on the work in progress.
@@ -1745,6 +1775,7 @@ function performUnitOfWork(unitOfWork: Fiber): void {
 }
 
 function completeUnitOfWork(unitOfWork: Fiber): void {
+  console.log(`执行 completeUnitOfWork 叶子结点 ${unitOfWork.key}`, { unitOfWork });
   // Attempt to complete the current unit of work, then move to the next
   // sibling. If there are no more siblings, return to the parent fiber.
   let completedWork = unitOfWork;
@@ -1954,6 +1985,10 @@ function resetChildLanes(completedWork: Fiber) {
 }
 
 function commitRoot(root) {
+  logPink({
+    name: 'commitRoot',
+    args: [{root}]
+  })
   const renderPriorityLevel = getCurrentPriorityLevel();
   runWithPriority(
     ImmediateSchedulerPriority,
@@ -1963,6 +1998,10 @@ function commitRoot(root) {
 }
 
 function commitRootImpl(root, renderPriorityLevel) {
+  console.log('执行 commitRootImpl', {root, renderPriorityLevel});
+  
+  // 触发useEffect回调和其他同步任务；
+  // 由于这些任务中可能再触发新的重渲染，因此需要在while循环中执行至没有任务为止
   do {
     // `flushPassiveEffects` will call `flushSyncUpdateQueue` at the end, which
     // means `flushPassiveEffects` will sometimes result in additional
@@ -2069,7 +2108,7 @@ function commitRootImpl(root, renderPriorityLevel) {
       previousLanePriority = getCurrentUpdateLanePriority();
       setCurrentUpdateLanePriority(SyncLanePriority);
     }
-
+    // 给执行上下文加上CommitContext，标记当前处于commit阶段
     const prevExecutionContext = executionContext;
     executionContext |= CommitContext;
     const prevInteractions = pushInteractions(root);
@@ -2099,6 +2138,7 @@ function commitRootImpl(root, renderPriorityLevel) {
         }
       } else {
         try {
+          // before mutation阶段做的工作都在该函数中
           commitBeforeMutationEffects();
         } catch (error) {
           invariant(nextEffect !== null, 'Should be working on an effect.');
@@ -2154,6 +2194,8 @@ function commitRootImpl(root, renderPriorityLevel) {
     // the mutation phase, so that the previous tree is still current during
     // componentWillUnmount, but before the layout phase, so that the finished
     // work is current during componentDidMount/Update.
+    // 每当完成一次更新渲染后，就会交换current fiber树和workInProgress fiber树
+    // 时机是mutation阶段之后，layout阶段开始之前
     root.current = finishedWork;
 
     // The next phase is the layout phase, where we call effects that read
@@ -2209,7 +2251,7 @@ function commitRootImpl(root, renderPriorityLevel) {
   const rootDidHavePassiveEffects = rootDoesHavePassiveEffects;
 
   if (rootDoesHavePassiveEffects) {
-    console.log('rootDoesHavePassiveEffects');
+    console.log('rootDoesHavePassiveEffects', rootDoesHavePassiveEffects);
     // This commit has passive effects. Stash a reference to them. But don't
     // schedule a callback until after flushing layout work.
     rootDoesHavePassiveEffects = false;
@@ -2331,10 +2373,13 @@ function commitRootImpl(root, renderPriorityLevel) {
 }
 
 function commitBeforeMutationEffects() {
+  console.log('执行 commitBeforeMutationEffects');
+  
   while (nextEffect !== null) {
     const current = nextEffect.alternate;
 
     if (!shouldFireAfterActiveInstanceBlur && focusedInstanceHandle !== null) {
+      // 处理DOM的focus、blur相关的操作
       if ((nextEffect.flags & Deletion) !== NoFlags) {
         if (doesFiberContain(nextEffect, focusedInstanceHandle)) {
           shouldFireAfterActiveInstanceBlur = true;
@@ -2354,6 +2399,7 @@ function commitBeforeMutationEffects() {
     }
 
     const flags = nextEffect.flags;
+    // 该fiber节点需要调用 getSnapshotBeforeUpdate 生命周期钩子
     if ((flags & Snapshot) !== NoFlags) {
       setCurrentDebugFiberInDEV(nextEffect);
 
@@ -2361,11 +2407,15 @@ function commitBeforeMutationEffects() {
 
       resetCurrentDebugFiberInDEV();
     }
+    // 存在“passive effects”，翻译过来就是“被动”的副作用
+    // 意指那些通过监听状态（依赖数组）变化产生的作用，如最常见的useEffect
     if ((flags & Passive) !== NoFlags) {
       // If there are passive effects, schedule a callback to flush at
       // the earliest opportunity.
       if (!rootDoesHavePassiveEffects) {
+        // 下面 flushPassiveEffects 会调用所有的useEffect回调，因此只要执行一次调度即可。用该变量标记是否调度过
         rootDoesHavePassiveEffects = true;
+        // 调度flushPassiveEffects
         scheduleCallback(NormalSchedulerPriority, () => {
           flushPassiveEffects();
           return null;
@@ -2380,19 +2430,24 @@ function commitMutationEffects(
   root: FiberRoot,
   renderPriorityLevel: ReactPriorityLevel,
 ) {
+  console.log('执行 commitMutationEffects', {root, renderPriorityLevel});
+  
   // TODO: Should probably move the bulk of this function to commitWork.
   while (nextEffect !== null) {
     setCurrentDebugFiberInDEV(nextEffect);
 
     const flags = nextEffect.flags;
 
+    // 重置对应 DOM 节点的文本内容
     if (flags & ContentReset) {
       commitResetTextContent(nextEffect);
     }
 
+    // 处理 ref
     if (flags & Ref) {
       const current = nextEffect.alternate;
       if (current !== null) {
+        
         commitDetachRef(current);
       }
       if (enableScopeAPI) {
@@ -2404,12 +2459,14 @@ function commitMutationEffects(
       }
     }
 
+    // 根据 flags 类型分别做处理
     // The following switch statement is only concerned about placement,
     // updates, and deletions. To avoid needing to add a case for every possible
     // bitmap value, we remove the secondary effects from the effect tag and
     // switch on that value.
     const primaryFlags = flags & (Placement | Update | Deletion | Hydrating);
     switch (primaryFlags) {
+      // 插入
       case Placement: {
         commitPlacement(nextEffect);
         // Clear the "placement" from effect tag so that we know that this is
@@ -2419,6 +2476,7 @@ function commitMutationEffects(
         nextEffect.flags &= ~Placement;
         break;
       }
+      // 插入 + 更新
       case PlacementAndUpdate: {
         // Placement
         commitPlacement(nextEffect);
@@ -2431,6 +2489,10 @@ function commitMutationEffects(
         commitWork(current, nextEffect);
         break;
       }
+      /* 服务端渲染相关
+        case Hydrating: {...}
+        case HydratingAndUpdate: {...}
+      */
       case Hydrating: {
         nextEffect.flags &= ~Hydrating;
         break;
@@ -2459,7 +2521,13 @@ function commitMutationEffects(
   }
 }
 
+// layout阶段做的工作都在该函数中
 function commitLayoutEffects(root: FiberRoot, committedLanes: Lanes) {
+  console.log('执行 commitLayoutEffects', {
+    root,
+    committedLanes,
+  });
+  
   if (__DEV__) {
     if (enableDebugTracing) {
       logLayoutEffectsStarted(committedLanes);
@@ -2476,6 +2544,7 @@ function commitLayoutEffects(root: FiberRoot, committedLanes: Lanes) {
 
     const flags = nextEffect.flags;
 
+    // 触发生命周期钩子和hook
     if (flags & (Update | Callback)) {
       const current = nextEffect.alternate;
       commitLayoutEffectOnFiber(root, current, nextEffect, committedLanes);
@@ -2488,6 +2557,7 @@ function commitLayoutEffects(root: FiberRoot, committedLanes: Lanes) {
         commitAttachRef(nextEffect);
       }
     } else {
+      // 挂载ref
       if (flags & Ref) {
         commitAttachRef(nextEffect);
       }
@@ -2509,6 +2579,8 @@ function commitLayoutEffects(root: FiberRoot, committedLanes: Lanes) {
 }
 
 export function flushPassiveEffects(): boolean {
+  console.log('执行 flushPassiveEffects');
+  
   // Returns whether passive effects were flushed.
   if (pendingPassiveEffectsRenderPriority !== NoSchedulerPriority) {
     const priorityLevel =

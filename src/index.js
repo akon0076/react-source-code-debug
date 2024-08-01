@@ -5,6 +5,7 @@ import App from './App';
 
 const root = document.getElementById('root')
 
+console.log("执行index.js");
 // Concurrent mode
 ReactDOM.createRoot(root).render(<App />);
 

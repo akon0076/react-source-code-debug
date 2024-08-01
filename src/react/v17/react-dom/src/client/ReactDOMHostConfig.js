@@ -398,6 +398,13 @@ export function commitMount(
   newProps: Props,
   internalInstanceHandle: Object,
 ): void {
+  console.log('执行 commitMount', {
+    domElement,
+    type,
+    newProps,
+    internalInstanceHandle,
+  });
+  
   // Despite the naming that might imply otherwise, this method only
   // fires if there is an `Update` effect scheduled during mounting.
   // This happens if `finalizeInitialChildren` returns `true` (which it
@@ -421,6 +428,15 @@ export function commitUpdate(
   newProps: Props,
   internalInstanceHandle: Object,
 ): void {
+  console.log('执行 commitUpdate', {
+    domElement,
+    updatePayload,
+    type,
+    oldProps,
+    newProps,
+    internalInstanceHandle,
+  });
+  
   // Update the props handle so that we know which props are the ones with
   // with current event handlers.
   updateFiberProps(domElement, newProps);
@@ -429,6 +445,8 @@ export function commitUpdate(
 }
 
 export function resetTextContent(domElement: Instance): void {
+  console.log('执行 resetTextContent', {domElement});
+  
   setTextContent(domElement, '');
 }
 

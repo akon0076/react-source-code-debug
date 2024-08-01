@@ -7,6 +7,7 @@
  * @flow
  */
 
+import { logRed } from './console.tool';
 import type {Fiber} from './ReactInternalTypes';
 import type {Lanes} from './ReactFiberLane';
 import type {
@@ -647,6 +648,15 @@ function completeWork(
   workInProgress: Fiber,
   renderLanes: Lanes,
 ): Fiber | null {
+  logRed({
+    name: '执行 completeWork', args: [{
+      current,
+      workInProgress,
+      renderLanes,
+      workInProgressKey: workInProgress ? workInProgress.key : undefined
+    }]
+  });
+
   const newProps = workInProgress.pendingProps;
 
   switch (workInProgress.tag) {

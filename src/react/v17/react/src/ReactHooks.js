@@ -23,6 +23,8 @@ type BasicStateAction<S> = (S => S) | S;
 type Dispatch<A> = A => void;
 
 function resolveDispatcher() {
+  console.log('执行 resolveDispatcher');
+  
   const dispatcher = ReactCurrentDispatcher.current;
   invariant(
     dispatcher !== null,
@@ -80,6 +82,8 @@ export function useContext<T>(
 export function useState<S>(
   initialState: (() => S) | S,
 ): [S, Dispatch<BasicStateAction<S>>] {
+  console.log('执行 useState: ', initialState);
+  
   const dispatcher = resolveDispatcher();
   return dispatcher.useState(initialState);
 }
@@ -89,11 +93,15 @@ export function useReducer<S, I, A>(
   initialArg: I,
   init?: I => S,
 ): [S, Dispatch<A>] {
+  console.log('执行 ReactHooks.js: useReducer, reducer, initialArg, init', {reducer, initialArg, init});
+  
   const dispatcher = resolveDispatcher();
   return dispatcher.useReducer(reducer, initialArg, init);
 }
 
-export function useRef<T>(initialValue: T): {|current: T|} {
+export function useRef<T>(initialValue: T): {| current: T |} {
+  console.log('执行 ReactHooks.js: useRef', initialValue);
+  
   const dispatcher = resolveDispatcher();
   return dispatcher.useRef(initialValue);
 }
@@ -102,6 +110,8 @@ export function useEffect(
   create: () => (() => void) | void,
   deps: Array<mixed> | void | null,
 ): void {
+  console.log('执行 ReactHooks.js: useEffect');
+  
   const dispatcher = resolveDispatcher();
   return dispatcher.useEffect(create, deps);
 }
@@ -110,6 +120,7 @@ export function useLayoutEffect(
   create: () => (() => void) | void,
   deps: Array<mixed> | void | null,
 ): void {
+  console.log('执行 ReactHooks.js: useLayoutEffect');
   const dispatcher = resolveDispatcher();
   return dispatcher.useLayoutEffect(create, deps);
 }
@@ -118,6 +129,7 @@ export function useCallback<T>(
   callback: T,
   deps: Array<mixed> | void | null,
 ): T {
+  console.log('执行 ReactHooks.js: useCallback');
   const dispatcher = resolveDispatcher();
   return dispatcher.useCallback(callback, deps);
 }
@@ -126,6 +138,7 @@ export function useMemo<T>(
   create: () => T,
   deps: Array<mixed> | void | null,
 ): T {
+  console.log('执行 ReactHooks.js: useMemo');
   const dispatcher = resolveDispatcher();
   return dispatcher.useMemo(create, deps);
 }
@@ -135,6 +148,7 @@ export function useImperativeHandle<T>(
   create: () => T,
   deps: Array<mixed> | void | null,
 ): void {
+  console.log('执行 ReactHooks.js: useImperativeHandle');
   const dispatcher = resolveDispatcher();
   return dispatcher.useImperativeHandle(ref, create, deps);
 }

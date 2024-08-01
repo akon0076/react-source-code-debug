@@ -316,6 +316,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     returnFiber: Fiber,
     currentFirstChild: Fiber,
   ): Map<string | number, Fiber> {
+    console.log("将子节点生成map mapRemainingChildren:", returnFiber, currentFirstChild);
     // Add the remaining children to a temporary map so that we can find them by
     // keys quickly. Implicit (null) keys get added to this set with their index
     // instead.
@@ -774,6 +775,12 @@ function ChildReconciler(shouldTrackSideEffects) {
     newChildren: Array<*>,
     lanes: Lanes,
   ): Fiber | null {
+    console.log("执行 reconcileChildrenArray",
+      {returnFiber,
+        currentFirstChild,
+        newChildren,
+        lanes}
+    );
     // This algorithm can't optimize by searching from both ends since we
     // don't have backpointers on fibers. I'm trying to see how far we can get
     // with that model. If it ends up not being worth the tradeoffs, we can
@@ -929,6 +936,12 @@ function ChildReconciler(shouldTrackSideEffects) {
     newChildrenIterable: Iterable<*>,
     lanes: Lanes,
   ): Fiber | null {
+    console.log("reconcileChildrenIterator: returnFiber, currentFirstChild, newChildren, lanes",
+      returnFiber,
+      currentFirstChild,
+      newChildren,
+      lanes
+    );
     // This is the same implementation as reconcileChildrenArray(),
     // but using the iterator instead.
 
@@ -1138,6 +1151,12 @@ function ChildReconciler(shouldTrackSideEffects) {
     element: ReactElement,
     lanes: Lanes,
   ): Fiber {
+    console.log('执行 reconcileSingleElement',
+      {returnFiber,
+        currentFirstChild,
+        element,
+        lanes});
+    
     const key = element.key;
     let child = currentFirstChild;
     while (child !== null) {
@@ -1277,6 +1296,8 @@ function ChildReconciler(shouldTrackSideEffects) {
     newChild: any,
     lanes: Lanes,
   ): Fiber | null {
+    console.log('执行 reconcileChildFibers');
+    
     // This function is not recursive.
     // If the top level item is an array, we treat it as a set of children,
     // not as a fragment. Nested arrays on the other hand will be treated as

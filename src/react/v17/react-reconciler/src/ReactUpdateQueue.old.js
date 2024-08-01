@@ -150,6 +150,8 @@ if (__DEV__) {
 }
 
 export function initializeUpdateQueue<State>(fiber: Fiber): void {
+  console.log('执行 initializeUpdateQueue', {fiber});
+  
   const queue: UpdateQueue<State> = {
     baseState: fiber.memoizedState,
     firstBaseUpdate: null,
@@ -182,6 +184,8 @@ export function cloneUpdateQueue<State>(
 }
 
 export function createUpdate(eventTime: number, lane: Lane): Update<*> {
+  console.log('执行 createUpdate', {eventTime, lane});
+  
   const update: Update<*> = {
     eventTime,
     lane,
@@ -196,6 +200,8 @@ export function createUpdate(eventTime: number, lane: Lane): Update<*> {
 }
 
 export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
+  console.log('执行 enqueueUpdate', {fiber, update});
+  
   const updateQueue = fiber.updateQueue;
   if (updateQueue === null) {
     // Only occurs if the fiber has been unmounted.

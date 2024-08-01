@@ -174,11 +174,16 @@ function warnOnInvalidCallback(callback: mixed, callerName: string): void {
 
 function legacyRenderSubtreeIntoContainer(
   parentComponent: ?React$Component<any, any>,
+  // ReactDOM.render()第一个参数，也就是render里的ReactElement对象
   children: ReactNodeList,
+  // 根节点(容器)，如 document.getElementById('container') 
   container: Container,
+  // true 为 服务端渲染，false为客户端渲染
   forceHydrate: boolean,
+  // 组件渲染完成后的回调函数
   callback: ?Function,
 ) {
+  console.log('legacyRenderSubtreeIntoContainer')
   if (__DEV__) {
     topLevelUpdateWarnings(container);
     warnOnInvalidCallback(callback === undefined ? null : callback, 'render');
@@ -189,6 +194,7 @@ function legacyRenderSubtreeIntoContainer(
   let root: RootType = (container._reactRootContainer: any);
   let fiberRoot;
   if (!root) {
+    console.log('mount fiberRoot to container');
     // Initial mount
     root = container._reactRootContainer = legacyCreateRootFromDOMContainer(
       container,
@@ -289,6 +295,8 @@ export function render(
   container: Container,
   callback: ?Function,
 ) {
+  debugger;
+  console.log("ReactDOM render")
   invariant(
     isValidContainer(container),
     'Target container is not a DOM element.',

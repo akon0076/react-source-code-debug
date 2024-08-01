@@ -7,6 +7,7 @@
  * @flow
  */
 
+import { logGreen } from './console.tool';
 import type {ReactProviderType, ReactContext} from 'shared/ReactTypes';
 import type {BlockComponent} from 'react/src/ReactBlock';
 import type {LazyComponent as LazyComponentType} from 'react/src/ReactLazy';
@@ -237,6 +238,8 @@ export function reconcileChildren(
   nextChildren: any,
   renderLanes: Lanes,
 ) {
+  console.log('执行 reconcileChildren');
+  
   if (current === null) {
     // If this is a fresh new component that hasn't been rendered yet, we
     // won't update its child set by applying minimal side-effects. Instead,
@@ -706,6 +709,14 @@ function updateFunctionComponent(
   nextProps: any,
   renderLanes,
 ) {
+  console.log('执行 updateFunctionComponent',
+    {current,
+      workInProgress,
+      Component,
+      nextProps,
+      renderLanes,}
+  );
+  
   if (__DEV__) {
     if (workInProgress.type !== workInProgress.elementType) {
       // Lazy component props can't be validated in createElement
@@ -858,6 +869,14 @@ function updateClassComponent(
   nextProps: any,
   renderLanes: Lanes,
 ) {
+  console.log('执行 updateFunctionComponent', {
+    current,
+    workInProgress,
+    Component,
+    nextProps,
+    renderLanes
+  });
+  
   if (__DEV__) {
     if (workInProgress.type !== workInProgress.elementType) {
       // Lazy component props can't be validated in createElement
@@ -1126,6 +1145,8 @@ function updateHostComponent(
   workInProgress: Fiber,
   renderLanes: Lanes,
 ) {
+  console.log('执行 updateHostComponent', {current, workInProgress, renderLanes});
+  
   pushHostContext(workInProgress);
 
   if (current === null) {
@@ -1149,6 +1170,8 @@ function updateHostComponent(
     // If we're switching from a direct text child to a normal child, or to
     // empty, we need to schedule the text content to be reset.
     workInProgress.flags |= ContentReset;
+    console.log('执行 workInProgress.flags |= ContentReset');
+    
   }
 
   markRef(current, workInProgress);
@@ -3085,6 +3108,14 @@ function beginWork(
   workInProgress: Fiber,
   renderLanes: Lanes,
 ): Fiber | null {
+  logGreen({
+    name: `执行 beginWork`, args: [{
+      current,
+      workInProgress,
+      renderLanes,
+      workInProgressKey: workInProgress ? workInProgress.key : undefined
+    }]
+  });
   const updateLanes = workInProgress.lanes;
 
   if (__DEV__) {

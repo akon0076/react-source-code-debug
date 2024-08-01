@@ -10,6 +10,8 @@ import PropsDiff from './components/PropsDiff'
 import Hooks from "./components/Hooks";
 import EventDemo from "./components/EventDemo";
 import ContextDemo from "./components/Context";
+import SetStateDemo from './components/SetStateDemo';
+import SetStateDemoHooks from './components/SetStateDemoHooks';
 import './App.css';
 
 // propsDiff
@@ -19,6 +21,7 @@ import './App.css';
   }
 }*/
 function App() {
+  console.log('App render')
 
   // 事件系统
   // return <EventDemo/>
@@ -36,7 +39,17 @@ function App() {
   // return <SchedulerTask/>
 
   // 高优先级插队
-  return <TasksWithDifferentPriorities/>
+  // return <TasksWithDifferentPriorities />
+  
+  // SetState Component
+  // return <div key="app">
+  //   <SetStateDemo />
+  // </div>
+
+  // SetStateDemoHook
+  return <div key="app">
+    <SetStateDemoHooks key="setStateDemoHooksComponent"/>
+  </div>
 
   // context
   // return <ContextDemo/>

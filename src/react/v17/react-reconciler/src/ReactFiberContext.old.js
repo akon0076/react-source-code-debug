@@ -223,6 +223,8 @@ function processChildContext(
 }
 
 function pushContextProvider(workInProgress: Fiber): boolean {
+  console.log('执行 pushContextProvider', {workInProgress});
+  
   if (disableLegacyContext) {
     return false;
   } else {

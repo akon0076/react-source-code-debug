@@ -60,6 +60,7 @@ import {
 } from 'react-reconciler/src/ReactRootTags';
 
 function ReactDOMRoot(container: Container, options: void | RootOptions) {
+  console.log('执行 ReactDOMRoot 添加 _internalRoot' )
   this._internalRoot = createRootImpl(container, ConcurrentRoot, options);
 }
 
@@ -74,6 +75,7 @@ function ReactDOMBlockingRoot(
 ReactDOMRoot.prototype.render = ReactDOMBlockingRoot.prototype.render = function(
   children: ReactNodeList,
 ): void {
+  console.log('执行 ReactDOMRoot.prototype.render')
   const root = this._internalRoot;
   if (__DEV__) {
     if (typeof arguments[1] === 'function') {
@@ -122,6 +124,7 @@ function createRootImpl(
   tag: RootTag,
   options: void | RootOptions,
 ) {
+  console.log('执行 createRootImpl')
   // Tag is either LegacyRoot or Concurrent Root
   const hydrate = options != null && options.hydrate === true;
   const hydrationCallbacks =
@@ -172,6 +175,7 @@ export function createRoot(
   container: Container,
   options?: RootOptions,
 ): RootType {
+  console.log('执行 createRoot')
   invariant(
     isValidContainer(container),
     'createRoot(...): Target container is not a DOM element.',

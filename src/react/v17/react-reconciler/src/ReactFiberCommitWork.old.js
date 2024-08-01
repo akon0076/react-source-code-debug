@@ -176,6 +176,8 @@ function safelyCallComponentWillUnmount(current: Fiber, instance: any) {
 }
 
 function safelyDetachRef(current: Fiber) {
+  console.log('执行 safelyDetachRef');
+  
   const ref = current.ref;
   if (ref !== null) {
     if (typeof ref === 'function') {
@@ -306,7 +308,14 @@ function commitBeforeMutationLifeCycles(
   );
 }
 
+// 遍历fiber节点的updateQueue，执行完所有useLayoutEffect的销毁函数
+// 由effectList中的fiber节点顺序可知，
+// 当子孙节点的mutation 阶段完成后才会轮到父节点
+// 因此，在执行函数组件中的useLayoutEffect销毁函数时，该函数组件下对应的DOM的更新操作是已经完成了的
+// 因此，在销毁函数中可以访问到更新后的这部分DOM内容，但不推荐这么做。
 function commitHookEffectListUnmount(tag: number, finishedWork: Fiber) {
+  console.log('执行 commitHookEffectListUnmount', {tag, finishedWork});
+  
   const updateQueue: FunctionComponentUpdateQueue | null = (finishedWork.updateQueue: any);
   const lastEffect = updateQueue !== null ? updateQueue.lastEffect : null;
   if (lastEffect !== null) {
@@ -461,6 +470,13 @@ function commitLifeCycles(
   finishedWork: Fiber,
   committedLanes: Lanes,
 ): void {
+  console.log('执行 commitLifeCycles', {
+    finishedRoot,
+    current,
+    finishedWork,
+    committedLanes,
+  });
+  
   switch (finishedWork.tag) {
     case FunctionComponent:
     case ForwardRef:
@@ -477,6 +493,7 @@ function commitLifeCycles(
       ) {
         try {
           startLayoutEffectTimer();
+          // 执行useLayoutEffect的回调函数
           commitHookEffectListMount(HookLayout | HookHasEffect, finishedWork);
         } finally {
           recordLayoutEffectDuration(finishedWork);
@@ -484,11 +501,13 @@ function commitLifeCycles(
       } else {
         commitHookEffectListMount(HookLayout | HookHasEffect, finishedWork);
       }
+      // 分别收集useEffect的销毁函数和回调函数，并再次开启调度
       console.log('finishedWork', finishedWork);
       schedulePassiveEffects(finishedWork);
       return;
     }
     case ClassComponent: {
+      // 调用Class组件的生命周期钩子
       const instance = finishedWork.stateNode;
       if (finishedWork.flags & Update) {
         if (current === null) {
@@ -633,6 +652,7 @@ function commitLifeCycles(
         // We could update instance props and state here,
         // but instead we rely on them being set during last render.
         // TODO: revisit this when we implement resuming.
+        // 执行setState中的第二个参数回调函数
         commitUpdateQueue(finishedWork, updateQueue, instance);
       }
       return;
@@ -854,6 +874,8 @@ function commitAttachRef(finishedWork: Fiber) {
 }
 
 function commitDetachRef(current: Fiber) {
+  console.log('执行 commitDetachRef', { current });
+  
   const currentRef = current.ref;
   if (currentRef !== null) {
     if (typeof currentRef === 'function') {
@@ -872,6 +894,12 @@ function commitUnmount(
   current: Fiber,
   renderPriorityLevel: ReactPriorityLevel,
 ): void {
+  console.log('执行 commitUnmount', {
+    finishedRoot,
+    current,
+    renderPriorityLevel,
+  });
+  
   onCommitUnmount(current);
 
   switch (current.tag) {
@@ -882,6 +910,7 @@ function commitUnmount(
     case Block: {
       const updateQueue: FunctionComponentUpdateQueue | null = (current.updateQueue: any);
       if (updateQueue !== null) {
+        // 调度useEffect的销毁函数
         const lastEffect = updateQueue.lastEffect;
         if (lastEffect !== null) {
           const firstEffect = lastEffect.next;
@@ -913,6 +942,7 @@ function commitUnmount(
       return;
     }
     case ClassComponent: {
+      // 卸载ref和调用componentWillUnmount
       safelyDetachRef(current);
       const instance = current.stateNode;
       if (typeof instance.componentWillUnmount === 'function') {
@@ -1271,6 +1301,12 @@ function unmountHostComponents(
   current: Fiber,
   renderPriorityLevel: ReactPriorityLevel,
 ): void {
+  console.log('执行 unmountHostComponents', {
+    finishedRoot,
+    current,
+    renderPriorityLevel,
+  });
+  
   // We only have the top Fiber that was deleted but we need to recurse down its
   // children to find all the terminal nodes.
   let node: Fiber = current;
@@ -1419,6 +1455,12 @@ function commitDeletion(
   current: Fiber,
   renderPriorityLevel: ReactPriorityLevel,
 ): void {
+  console.log('执行 commitDeletion', {
+  finishedRoot,
+  current,
+  renderPriorityLevel,
+  });
+  
   if (supportsMutation) {
     // Recursively delete all host nodes from the parent.
     // Detach refs and call componentWillUnmount() on the whole subtree.
@@ -1427,6 +1469,7 @@ function commitDeletion(
     // Detach refs and call componentWillUnmount() on the whole subtree.
     commitNestedUnmounts(finishedRoot, current, renderPriorityLevel);
   }
+  // 利用detachFiberMutation函数将fiber节点中的属性清空
   const alternate = current.alternate;
   detachFiberMutation(current);
   if (alternate !== null) {
@@ -1435,6 +1478,8 @@ function commitDeletion(
 }
 
 function commitWork(current: Fiber | null, finishedWork: Fiber): void {
+  console.log('执行 commitWork', {current, finishedWork});
+  
   if (!supportsMutation) {
     switch (finishedWork.tag) {
       case FunctionComponent:
@@ -1740,6 +1785,8 @@ export function isSuspenseBoundaryBeingHidden(
 }
 
 function commitResetTextContent(current: Fiber) {
+  console.log('执行 commitResetTextContent');
+  
   if (!supportsMutation) {
     return;
   }

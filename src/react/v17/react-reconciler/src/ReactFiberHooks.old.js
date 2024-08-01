@@ -550,6 +550,8 @@ function mountWorkInProgressHook(): Hook {
 }
 
 function updateWorkInProgressHook(): Hook {
+  console.log('执行 updateWorkInProgressHook');
+  
   // This function is used both for updates and for re-renders triggered by a
   // render phase update. It assumes there is either a current hook we can
   // clone, or a work-in-progress hook from a previous render pass that we can
@@ -653,6 +655,12 @@ function updateReducer<S, I, A>(
   initialArg: I,
   init?: I => S,
 ): [S, Dispatch<A>] {
+  console.log('执行 updateReducer', {
+    reducer,
+    initialArg,
+    init,
+  });
+  
   const hook = updateWorkInProgressHook();
   const queue = hook.queue;
   invariant(
@@ -787,6 +795,8 @@ function rerenderReducer<S, I, A>(
   initialArg: I,
   init?: I => S,
 ): [S, Dispatch<A>] {
+  console.log('执行 rerenderReducer');
+  
   const hook = updateWorkInProgressHook();
   const queue = hook.queue;
   invariant(
@@ -1113,6 +1123,8 @@ function updateMutableSource<Source, Snapshot>(
 function mountState<S>(
   initialState: (() => S) | S,
 ): [S, Dispatch<BasicStateAction<S>>] {
+  console.log('执行 mountState', {initialState});
+  
   const hook = mountWorkInProgressHook();
   if (typeof initialState === 'function') {
     // $FlowFixMe: Flow doesn't like mixed types
@@ -1138,12 +1150,16 @@ function mountState<S>(
 function updateState<S>(
   initialState: (() => S) | S,
 ): [S, Dispatch<BasicStateAction<S>>] {
+  console.log('执行 updateState', {initialState});
+  
   return updateReducer(basicStateReducer, (initialState: any));
 }
 
 function rerenderState<S>(
   initialState: (() => S) | S,
 ): [S, Dispatch<BasicStateAction<S>>] {
+  console.log('执行 rerenderState');
+  
   return rerenderReducer(basicStateReducer, (initialState: any));
 }
 
@@ -1647,6 +1663,12 @@ function dispatchAction<S, A>(
   queue: UpdateQueue<S, A>,
   action: A,
 ) {
+  console.log('执行 dispatchAction', {
+    fiber,
+    queue,
+    action
+  });
+  
   if (__DEV__) {
     if (typeof arguments[3] === 'function') {
       console.error(
