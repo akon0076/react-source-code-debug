@@ -1998,7 +1998,7 @@ function commitRoot(root) {
 }
 
 function commitRootImpl(root, renderPriorityLevel) {
-  console.log('执行 commitRootImpl', {root, renderPriorityLevel});
+  console.log('执行 commitRootImpl start', {root, renderPriorityLevel});
   
   // 触发useEffect回调和其他同步任务；
   // 由于这些任务中可能再触发新的重渲染，因此需要在while循环中执行至没有任务为止
@@ -2369,6 +2369,7 @@ function commitRootImpl(root, renderPriorityLevel) {
     markCommitStopped();
   }
 
+  console.log('执行 commitRootImpl end');
   return null;
 }
 

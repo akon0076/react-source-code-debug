@@ -13,6 +13,9 @@ import ContextDemo from "./components/Context";
 import SetStateDemo from './components/SetStateDemo';
 import SetStateDemoHooks from './components/SetStateDemoHooks';
 import './App.css';
+import UseEffectDemoHook from './components/UseEffectDemoHook';
+import ChildFuntionComponentDemo from './components/ChildFuntionComponentDemo';
+import ConcurrentDemo from './components/ConcurrentDemo';
 
 // propsDiff
 /*class App extends React.Component {
@@ -48,7 +51,10 @@ function App() {
 
   // SetStateDemoHook
   return <div key="app">
-    <SetStateDemoHooks key="setStateDemoHooksComponent"/>
+    {/* <SetStateDemoHooks key="setStateDemoHooksComponent"/> */}
+    {/* <UseEffectDemoHook key="useEffectDemoHookComponent"/> */}
+    <ChildFuntionComponentDemo key="childFuntionComponentDemo"/>
+    {/* <ConcurrentDemo key="concurrentDemo"/> */}
   </div>
 
   // context

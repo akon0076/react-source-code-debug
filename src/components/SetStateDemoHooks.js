@@ -44,6 +44,7 @@ import React, { useMemo, useCallback, useEffect, useRef, useLayoutEffect } from 
 // }
 
 const SetStateDemoHooks = () => {
+  console.log('SetStateDemoHooks render');
   const [count, setCount] = React.useState(0);
   // const [doubleCount, setDoubleCount] = React.useState(0);
 
